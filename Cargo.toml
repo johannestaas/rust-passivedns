@@ -1,0 +1,7 @@
+[package]
+name = "passivedns"
+version = "0.1.0"
+authors = ["Johan Nestaas <johannestaas@gmail.com>"]
+
+[dependencies]
+pcap="*"
