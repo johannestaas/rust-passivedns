@@ -18,18 +18,19 @@ fn is_dns_answer(data: &[u8]) -> bool {
 }
 
 fn dns_query(data: &[u8]) -> String {
+    let mut fqdn: String = String::new();
     let mut i: usize = 0x37;
-    while data[i] != 0x3 {
+    while data[i] != 0x0 {
         i += 1;
     }
-    let domain = std::str::from_utf8(&data[0x37..i]).unwrap();
-    let mut j = i + 1;
-    while data[j] != 0x0 {
-        j += 1;
-    }
-    let suffix = std::str::from_utf8(&data[i+1..j]).unwrap();
-    println!("{}.{}", domain, suffix);
-    format!("{}.{}", domain, suffix)
+    let query_bytes = &data[0x37..i];
+    let query = std::str::from_utf8(query_bytes).unwrap();
+    let split_3 = query.split("\x03");
+    for slc in split_3 {
+        fqdn.push_str(slc);
+        fqdn.push('.');
+    };
+    fqdn
 }
 
 
