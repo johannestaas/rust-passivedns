@@ -1,4 +1,5 @@
 //! The DNS Class enum and implementation.
+use std::fmt;
 
 #[derive(Debug)]
 pub enum DnsClass {
@@ -16,7 +17,7 @@ impl DnsClass {
             254 => DnsClass::NONE,
             255 => DnsClass::ANY,
             65280...65534 => DnsClass::PRIVATE,
-            _ => DnsClass::UMAPPED,
+            _ => DnsClass::UNMAPPED,
         }
     }
 }
