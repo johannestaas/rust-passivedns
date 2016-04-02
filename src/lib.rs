@@ -16,6 +16,7 @@ pub fn parse_name_into(data: &[u8], s: &mut String) -> u32 {
         let lbl_len = data[i as usize] as u32;
         if lbl_len == 0x0 {
             println!("breaking!");
+            i += 1;
             break;
         }
         println!("label length: {}", lbl_len);
@@ -149,10 +150,8 @@ pub struct DnsResponse {
 
 impl Query {
     pub fn new(s: String, data: &[u8], i: &mut u32) -> Query {
-        //let typ: u16 = (u16::from(data[0]) << 8) | u16::from(data[1]);
-        //let class: u16 = (u16::from(data[2]) << 8) | u16::from(data[3]);
-        let typ: u16 = u16::from(data[2]) + (u16::from(data[3]) << 8);
-        let class: u16 = u16::from(data[0]) + (u16::from(data[1]) << 8);
+        let typ: u16 = to_u16!(data, 2);
+        let class: u16 = to_u16!(data, 0);
         *i += 4;
         Query {
             name: s,
