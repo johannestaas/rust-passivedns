@@ -53,12 +53,17 @@ pub struct DnsHeader {
 }
 
 #[derive(Debug)]
-pub struct DnsResponse {
-    header: DnsHeader,
+pub struct DnsPayload {
     questions: Vec<Query>,
     answer_rrs: Vec<ResourceRecord>,
     authority_rrs: Vec<ResourceRecord>,
     additional_rrs: Vec<ResourceRecord>,
+}
+
+#[derive(Debug)]
+pub struct DnsResponse {
+    header: DnsHeader,
+    payload: DnsPayload,
 }
 
 macro_rules! gt0 {
@@ -106,6 +111,15 @@ impl DnsResponse {
         }
     }
 
+    pub fn parse_payload(data: &[u8]) -> DnsPayload {
+        DnsPayload {
+            questions: Vec::new(),
+            answer_rrs: Vec::new(),
+            authority_rrs: Vec::new(),
+            additional_rrs: Vec::new(),
+        }
+    }
+
     pub fn new(data: &[u8]) -> Option<DnsResponse> {
         if data.len() < 0x36 {
             return None;
@@ -119,10 +133,10 @@ impl DnsResponse {
         if !hdr.qr {
             return None;
         }
+        let payload = DnsResponse::parse_payload(&data[0x36..]);
         Some(DnsResponse {
             header: hdr,
-            questions: Vec::new(),
-            answer_rrs: Vec::new(),
+            payload: payload,
         })
     }
 
