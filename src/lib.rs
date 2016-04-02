@@ -108,8 +108,10 @@ macro_rules! gt0 {
 
 impl Query {
     pub fn new(s: String, data: &[u8]) -> Query {
-        let typ: u16 = (u16::from(data[0]) << 8) | u16::from(data[1]);
-        let class: u16 = (u16::from(data[2]) << 8) | u16::from(data[3]);
+        //let typ: u16 = (u16::from(data[0]) << 8) | u16::from(data[1]);
+        //let class: u16 = (u16::from(data[2]) << 8) | u16::from(data[3]);
+        let typ: u16 = u16::from(data[2]) + (u16::from(data[3]) << 8);
+        let class: u16 = u16::from(data[0]) + (u16::from(data[1]) << 8);
         Query {
             name: s,
             typ: typ,
@@ -237,6 +239,9 @@ impl DnsResponse {
             i = DnsResponse::parse_name_into(&data[i..], &mut s);
             let q = Query::new(s, &data[i..]);
             questions.push(q);
+        }
+        for q in &questions {
+            println!("Query: {}", q);
         }
 
         DnsPayload {
