@@ -1,10 +1,13 @@
 //! ResourceRecord struct and implementation
 //! Exists in DNS response payload.
 
+use dnsclass::DnsClass;
+use dnstype::DnsType;
+
 #[derive(Debug)]
 pub struct ResourceRecord {
-    typ: u16,
-    class: u16,
+    typ: DnsType,
+    class: DnsClass,
     ttl: u32,
     rdata_length: u16,
     rdata: Vec<u8>,
@@ -27,8 +30,8 @@ impl ResourceRecord {
         rdata.extend((&data[*i as usize..rlen as usize + *i as usize]).iter().cloned());
         *i += rlen as u32;
         ResourceRecord {
-            typ: typ,
-            class: class,
+            typ: DnsType::new(typ),
+            class: DnsClass::new(class),
             ttl: ttl,
             rdata_length: rlen,
             rdata: rdata,

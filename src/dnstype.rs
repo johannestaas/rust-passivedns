@@ -2,6 +2,7 @@
 use std::fmt;
 
 /// Enum of the different types (A, CNAME, ...)
+#[derive(Debug)]
 pub enum DnsType {
     ZERO, A, NS, MD, MF, CNAME, SOA, MB, MG, MR, NULL, WKS, PTR, HINFO, MINFO, MX, 
     TXT, RP, AFSDB, X25, ISDN, RT, NSAP, NSAP_PTR, SIG, KEY, PX, GPOS, AAAA,
