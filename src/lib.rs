@@ -10,6 +10,7 @@ mod dnsclass;
 mod rr;
 mod query;
 
+use query::Query;
 use rr::ResourceRecord;
 
 pub fn parse_name_into(data: &[u8], s: &mut String) -> u32 {
