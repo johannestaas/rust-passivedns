@@ -1,6 +1,7 @@
 extern crate pcap;
 extern crate passivedns;
-use passivedns::DnsResponse;
+
+use passivedns::dns::Response;
 
 fn device() -> pcap::Device {
     pcap::Device::lookup().unwrap()
@@ -12,7 +13,7 @@ fn capture(dev: pcap::Device) -> pcap::Capture<pcap::Active> {
 
 fn listen(cap: &mut pcap::Capture<pcap::Active>) {
     while let Ok(packet) = cap.next() {
-        let response = match DnsResponse::new(&packet.data) {
+        let response = match Response::new(&packet.data) {
             Some(response) => response,
             _ => continue,
         };
