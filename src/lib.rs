@@ -215,15 +215,14 @@ impl fmt::Display for Query {
 impl DnsResponse {
 
     pub fn parse_header(data: &[u8]) -> DnsHeader {
-        //let ident: u16 = (u16::from(data[0]) << 8) | u16::from(data[1]);
-        let ident: u16 = (data[0] as u16) + ((data[1] as u16) << 8);
+        let ident: u16 = to_u16!(data, 0);
         let data_0_16: u8 = data[2];
         let qr: bool = gt0!(data_0_16 >> 7);
         let op: u8 = (data_0_16 >> 3) & 0x0f;
         let aa: bool = gt0!(data_0_16 >> 2);
         let tc: bool = gt0!(data_0_16 >> 1);
         let rd: bool = gt0!(data_0_16 & 0x01);
-        let data_16_32 = u8::from(data[3]);
+        let data_16_32: u8 = data[3];
         let ra: bool = gt0!(data_16_32 >> 7);
         let z: bool = gt0!(data_16_32 >> 6);
         let ad: bool = gt0!(data_16_32 >> 5);
@@ -265,8 +264,11 @@ impl DnsResponse {
             let q = Query::new(name, &data[(i as usize)..], &mut i);
             questions.push(q);
         }
+        println!("i: {}, {:?}", i, questions);
         for _ in 0..hdr.total_answer_rrs {
+            println!("i: {}", i);
             let mut name = String::new();
+            println!("{:?}", &data[(i as usize)..]);
             i += parse_name_into(&data[(i as usize)..], &mut name);
             let rr = ResourceRecord::new(name, &data[(i as usize)..], &mut i);
             answer_rrs.push(rr);
