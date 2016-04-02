@@ -1,26 +1,60 @@
 //! 
 //! http://www.networksorcery.com/enp/protocol/dns.htm
 //!
+#![allow(non_camel_case_types)]
+
+use std::fmt;
 
 pub enum DnsType {
-    A, NS, MD, MF, CNAME, SOA, MB, MG, MR, NULL, WKS, PTR, HINFO, MINFO, MX, 
+    ZERO, A, NS, MD, MF, CNAME, SOA, MB, MG, MR, NULL, WKS, PTR, HINFO, MINFO, MX, 
     TXT, RP, AFSDB, X25, ISDN, RT, NSAP, NSAP_PTR, SIG, KEY, PX, GPOS, AAAA,
     LOC, NXT, EID, NIMLOC, SRV, ATMA, NAPTR, KX, CERT, A6, DNAME, SINK, OPT,
     APL, DS, SSHFP, IPSECKEY, RRSIG, NSEC, DNSKEY, DHCID, NSEC3, NSEC3PARAM,
     TLSA, HIP, NINFO, RKEY, TALINK, CHILD_DS, SPF, UINFO, UID, GID, UNSPEC,
     TKEY, TSIG, IXFR, AXFR, MAILB, MAILA, ALL, URI, CAA, DNSSEC_TA,
-    DNSSEC_LV, OTHER
+    DNSSEC_LV, OTHER, UNMAPPED
 }
 
+impl fmt::Display for DnsType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let s = match *self {
+            DnsType::A => "A",
+            DnsType::NS => "NS",
+            DnsType::CNAME => "CNAME",
+            DnsType::PTR => "PTR",
+            DnsType::MX => "MX",
+            DnsType::TXT => "TXT",
+            DnsType::SIG => "SIG",
+            DnsType::KEY => "KEY",
+            DnsType::AAAA => "AAAA",
+            DnsType::LOC => "LOC",
+            DnsType::SRV => "SRV",
+            DnsType::CERT => "CERT",
+            DnsType::DNAME => "DNAME",
+            DnsType::DNSKEY => "DNSKEY",
+            DnsType::TKEY => "TKEY",
+            DnsType::TSIG => "TSIG",
+            DnsType::IXFR => "IXFR",
+            DnsType::AXFR => "AXFR",
+            DnsType::DNSSEC_TA => "DNSSEC_TA",
+            DnsType::DNSSEC_LV => "DNSSEC_LV",
+            DnsType::UNMAPPED => "UNMAPPED",
+            _ => "UNMAPPED",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+#[derive(Debug)]
 pub enum DnsClass {
-    RESERVED, IN, CH, HS, NONE, ANY, PRIVATE, OTHER
+    RESERVED, IN, CH, HS, NONE, ANY, PRIVATE, OTHER, UNMAPPED
 }
 
 #[derive(Debug)]
 pub struct Query {
-    query_name: String,
-    query_type: u16,
-    query_class: u16,
+    name: String,
+    typ: u16,
+    class: u16,
 }
 
 #[derive(Debug)]
@@ -72,6 +106,69 @@ macro_rules! gt0 {
     }
 }
 
+impl Query {
+    pub fn new(s: String, data: &[u8]) -> Query {
+        let typ: u16 = (u16::from(data[0]) << 8) | u16::from(data[1]);
+        let class: u16 = (u16::from(data[2]) << 8) | u16::from(data[3]);
+        Query {
+            name: s,
+            typ: typ,
+            class: class,
+        }
+    }
+
+    pub fn typ(&self) -> DnsType {
+        match self.typ {
+            1 => DnsType::A,
+            2 => DnsType::NS,
+            5 => DnsType::CNAME,
+            12 => DnsType::PTR,
+            15 => DnsType::MX,
+            16 => DnsType::TXT,
+            24 => DnsType::SIG,
+            25 => DnsType::KEY,
+            28 => DnsType::AAAA,
+            29 => DnsType::LOC,
+            33 => DnsType::SRV,
+            37 => DnsType::CERT,
+            39 => DnsType::DNAME,
+            48 => DnsType::DNSKEY,
+            249 => DnsType::TKEY,
+            250 => DnsType::TSIG,
+            251 => DnsType::IXFR,
+            252 => DnsType::AXFR,
+            32768 => DnsType::DNSSEC_TA,
+            32769 => DnsType::DNSSEC_LV,
+            _ => DnsType::UNMAPPED,
+        }
+    }
+
+    pub fn class(&self) -> DnsClass {
+        match self.class {
+            0 => DnsClass::RESERVED,
+            1 => DnsClass::IN,
+            2 => DnsClass::OTHER,
+            3 => DnsClass::CH,
+            4 => DnsClass::HS,
+            5...253 => DnsClass::OTHER,
+            254 => DnsClass::NONE,
+            255 => DnsClass::ANY,
+            256...65279 => DnsClass::OTHER,
+            65280...65534 => DnsClass::PRIVATE,
+            65535 => DnsClass::OTHER,
+            _ => DnsClass::UNMAPPED,
+        }
+    }
+
+}
+
+impl fmt::Display for Query {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "[{}] {}", self.typ(), self.name)
+    }
+}
+
+
 impl DnsResponse {
 
     pub fn parse_header(data: &[u8]) -> DnsHeader {
@@ -111,12 +208,42 @@ impl DnsResponse {
         }
     }
 
-    pub fn parse_payload(data: &[u8]) -> DnsPayload {
+    pub fn parse_name_into(data: &[u8], s: &mut String) -> usize {
+        let mut i: usize = 0;
+        loop {
+            let lbl_len = data[i] as usize;
+            if lbl_len == 0x0 {
+                break;
+            }
+            for _ in 0..lbl_len {
+                i += 1;
+                s.push_str(std::str::from_utf8(&[data[i]]).unwrap());
+            }
+            s.push('.');
+            i += 1;
+        }
+        return i;
+    }
+
+    pub fn parse_payload(hdr: &DnsHeader, data: &[u8]) -> DnsPayload {
+        let mut questions: Vec<Query> = Vec::new();
+        let mut answer_rrs: Vec<ResourceRecord> = Vec::new();
+        let mut authority_rrs: Vec<ResourceRecord> = Vec::new();
+        let mut additional_rrs: Vec<ResourceRecord> = Vec::new();
+        let mut i: usize = 0;
+
+        for _ in 0..hdr.total_questions {
+            let mut s = String::new();
+            i = DnsResponse::parse_name_into(&data[i..], &mut s);
+            let q = Query::new(s, &data[i..]);
+            questions.push(q);
+        }
+
         DnsPayload {
-            questions: Vec::new(),
-            answer_rrs: Vec::new(),
-            authority_rrs: Vec::new(),
-            additional_rrs: Vec::new(),
+            questions: questions,
+            answer_rrs: answer_rrs,
+            authority_rrs: authority_rrs,
+            additional_rrs: additional_rrs,
         }
     }
 
@@ -133,7 +260,7 @@ impl DnsResponse {
         if !hdr.qr {
             return None;
         }
-        let payload = DnsResponse::parse_payload(&data[0x36..]);
+        let payload = DnsResponse::parse_payload(&hdr, &data[0x36..]);
         Some(DnsResponse {
             header: hdr,
             payload: payload,
