@@ -12,13 +12,10 @@ pub fn parse_name_into(data: &[u8], s: &mut String) -> u32 {
         return 0;
     }
     loop {
-        println!("looping...");
         let lbl_len = data[i as usize] as u32;
         if lbl_len == 0x0 {
-            println!("breaking!");
             break;
         }
-        println!("label length: {}", lbl_len);
         for _ in 0..lbl_len {
             i += 1;
             s.push_str(std::str::from_utf8(&[data[i as usize]]).unwrap());
@@ -83,7 +80,6 @@ pub struct Query {
 
 #[derive(Debug)]
 pub struct ResourceRecord {
-    name: String,
     typ: u16,
     class: u16,
     ttl: u32,
@@ -92,24 +88,21 @@ pub struct ResourceRecord {
 }
 
 impl ResourceRecord {
-    pub fn new(s: String, data: &[u8], i: &mut u32) -> ResourceRecord {
-        //let typ: u16 = (u16::from(data[0]) << 8) | u16::from(data[1]);
-        //let class: u16 = (u16::from(data[2]) << 8) | u16::from(data[3]);
-        let class: u16 = to_u16!(data, 0);
-        println!("class: {}", class);
-        let typ: u16 = to_u16!(data, 2);
-        println!("type: {}", typ);
-        let ttl: u32 = to_u32!(data, 4);
-        println!("ttl: {}", ttl);
-        let rlen: u16 = to_u16!(data, 8);
-        println!("rlen: {}", rlen);
-        *i += 10;
+    pub fn new(data: &[u8], i: &mut u32) -> ResourceRecord {
+        //let unknown: u16 = to_u16!(data, 0);
+        *i += 2;
+        let typ: u16 = to_u16!(data, *i as usize);
+        *i += 2;
+        let class: u16 = to_u16!(data, *i as usize);
+        *i += 2;
+        let ttl: u32 = to_u32!(data, *i as usize);
+        *i += 4;
+        let rlen: u16 = to_u16!(data, *i as usize);
+        *i += 2;
         let mut rdata: Vec<u8> = Vec::new();
         rdata.extend((&data[*i as usize..rlen as usize + *i as usize]).iter().cloned());
-        println!("rdata: {:?}", rdata);
         *i += rlen as u32;
         ResourceRecord {
-            name: s,
             typ: typ,
             class: class,
             ttl: ttl,
@@ -156,8 +149,7 @@ impl Query {
     pub fn new(s: String, data: &[u8], i: &mut u32) -> Query {
         let typ: u16 = to_u16!(data, 1);
         let class: u16 = to_u16!(data, 3);
-        println!("query type: {}", typ);
-        println!("query class: {}", class);
+        // After that is u16 name?
         *i += 5;
         Query {
             name: s,
@@ -266,36 +258,21 @@ impl DnsResponse {
         for _ in 0..hdr.total_questions {
             let mut name = String::new();
             i += parse_name_into(&data[(i as usize)..], &mut name);
-            println!("Query::new of {:?}", &data[(i as usize)..]);
             let q = Query::new(name, &data[(i as usize)..], &mut i);
             questions.push(q);
         }
-        println!("i: {}, {:?}", i, questions);
         for _ in 0..hdr.total_answer_rrs {
-            println!("i: {}", i);
-            let mut name = String::new();
-            println!("{:?}", &data[(i as usize)..]);
-            i += parse_name_into(&data[(i as usize)..], &mut name);
-            let rr = ResourceRecord::new(name, &data[(i as usize)..], &mut i);
+            let rr = ResourceRecord::new(&data, &mut i);
             answer_rrs.push(rr);
         }
         for _ in 0..hdr.total_authority_rrs {
-            let mut name = String::new();
-            i += parse_name_into(&data[(i as usize)..], &mut name);
-            let rr = ResourceRecord::new(name, &data[(i as usize)..], &mut i);
+            let rr = ResourceRecord::new(&data[..], &mut i);
             authority_rrs.push(rr);
         }
         for _ in 0..hdr.total_additional_rrs {
-            let mut name = String::new();
-            i += parse_name_into(&data[(i as usize)..], &mut name);
-            let rr = ResourceRecord::new(name, &data[(i as usize)..], &mut i);
+            let rr = ResourceRecord::new(&data[..], &mut i);
             additional_rrs.push(rr);
         }
-
-        for q in &questions {
-            println!("Query: {}", q);
-        }
-
         DnsPayload {
             questions: questions,
             answer_rrs: answer_rrs,
@@ -317,7 +294,6 @@ impl DnsResponse {
         if !hdr.qr {
             return None;
         }
-        println!("{:?}", hdr);
         let payload = DnsResponse::parse_payload(&hdr, &data[0x36..]);
         Some(DnsResponse {
             header: hdr,
