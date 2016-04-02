@@ -86,7 +86,7 @@ pub struct ResourceRecord {
     class: u16,
     ttl: u32,
     rdata_length: u16,
-    rdata: String,
+    rdata: Vec<u8>,
 }
 
 impl ResourceRecord {
@@ -99,8 +99,9 @@ impl ResourceRecord {
         let ttl: u32 = to_u32!(data, 4);
         let rlen: u16 = to_u16!(data, 8);
         i += 10;
-        let mut rdata = String::new();
-        i += parse_name_into(&data[(i as usize)..], &mut rdata);
+        let mut rdata: Vec<u8> = Vec::new();
+        rdata.extend((&data[i as usize..rlen as usize + i as usize]).iter().cloned());
+        i += rlen as u32;
         (ResourceRecord {
             name: s,
             typ: typ,
@@ -269,6 +270,18 @@ impl DnsResponse {
             i += parse_name_into(&data[(i as usize)..], &mut name);
             let (rr, i) = ResourceRecord::new(name, &data[(i as usize)..], i);
             answer_rrs.push(rr);
+        }
+        for _ in 0..hdr.total_authority_rrs {
+            let mut name = String::new();
+            i += parse_name_into(&data[(i as usize)..], &mut name);
+            let (rr, i) = ResourceRecord::new(name, &data[(i as usize)..], i);
+            authority_rrs.push(rr);
+        }
+        for _ in 0..hdr.total_additional_rrs {
+            let mut name = String::new();
+            i += parse_name_into(&data[(i as usize)..], &mut name);
+            let (rr, i) = ResourceRecord::new(name, &data[(i as usize)..], i);
+            additional_rrs.push(rr);
         }
 
         for q in &questions {
