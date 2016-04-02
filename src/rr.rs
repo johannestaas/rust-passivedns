@@ -1,13 +1,13 @@
 //! ResourceRecord struct and implementation
 //! Exists in DNS response payload.
 
-use dnsclass::DnsClass;
-use dnstype::DnsType;
+use dnsclass::Class;
+use dnstype::Type;
 
 #[derive(Debug)]
 pub struct ResourceRecord {
-    typ: DnsType,
-    class: DnsClass,
+    typ: Type,
+    class: Class,
     ttl: u32,
     rdata_length: u16,
     rdata: Vec<u8>,
@@ -30,13 +30,18 @@ impl ResourceRecord {
         rdata.extend((&data[*i as usize..rlen as usize + *i as usize]).iter().cloned());
         *i += rlen as u32;
         ResourceRecord {
-            typ: DnsType::new(typ),
-            class: DnsClass::new(class),
+            typ: Type::new(typ),
+            class: Class::new(class),
             ttl: ttl,
             rdata_length: rlen,
             rdata: rdata,
         }
     }
+
+    pub fn serialize(&self) -> String {
+        match self.typ {
+            Type::A => "A".to_string(),
+            _ => "UNMAPPED".to_string(),
+        }
+    }
 }
-
-

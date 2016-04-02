@@ -1,16 +1,16 @@
 //! Implements a Query struct and instanciates it from data.
 
 use std::fmt;
-use dnstype::DnsType; 
-use dnsclass::DnsClass;
+use dnstype::Type; 
+use dnsclass::Class;
 
 
 /// The Query struct holds the name as a String
 #[derive(Debug)]
 pub struct Query {
     name: String,
-    typ: DnsType,
-    class: DnsClass,
+    typ: Type,
+    class: Class,
 }
 
 impl Query {
@@ -21,8 +21,8 @@ impl Query {
         *i += 5;
         Query {
             name: s,
-            typ: DnsType::new(typ),
-            class: DnsClass::new(class),
+            typ: Type::new(typ),
+            class: Class::new(class),
         }
     }
 }

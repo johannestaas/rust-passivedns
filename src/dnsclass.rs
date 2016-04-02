@@ -2,38 +2,38 @@
 use std::fmt;
 
 #[derive(Debug)]
-pub enum DnsClass {
+pub enum Class {
     RESERVED, IN, CH, HS, NONE, ANY, PRIVATE, OTHER, UNMAPPED
 }
 
-impl DnsClass {
-    /// Creates a DnsClass from a u16, DnsType::UNMAPPED if not implemented yet
-    pub fn new(i: u16) -> DnsClass {
+impl Class {
+    /// Creates a Class from a u16, DnsType::UNMAPPED if not implemented yet
+    pub fn new(i: u16) -> Class {
         match i {
-            0 => DnsClass::RESERVED,
-            1 => DnsClass::IN,
-            3 => DnsClass::CH,
-            4 => DnsClass::HS,
-            254 => DnsClass::NONE,
-            255 => DnsClass::ANY,
-            65280...65534 => DnsClass::PRIVATE,
-            _ => DnsClass::UNMAPPED,
+            0 => Class::RESERVED,
+            1 => Class::IN,
+            3 => Class::CH,
+            4 => Class::HS,
+            254 => Class::NONE,
+            255 => Class::ANY,
+            65280...65534 => Class::PRIVATE,
+            _ => Class::UNMAPPED,
         }
     }
 }
 
-impl fmt::Display for DnsClass {
-    /// Allows debug display of a DnsClass
+impl fmt::Display for Class {
+    /// Allows debug display of a Class
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = match *self {
-            DnsClass::RESERVED => "RESERVED",
-            DnsClass::IN => "IN",
-            DnsClass::CH => "CH",
-            DnsClass::HS => "HS",
-            DnsClass::NONE => "NONE",
-            DnsClass::ANY => "ANY",
-            DnsClass::PRIVATE => "PRIVATE",
-            DnsClass::UNMAPPED => "UNMAPPED",
+            Class::RESERVED => "RESERVED",
+            Class::IN => "IN",
+            Class::CH => "CH",
+            Class::HS => "HS",
+            Class::NONE => "NONE",
+            Class::ANY => "ANY",
+            Class::PRIVATE => "PRIVATE",
+            Class::UNMAPPED => "UNMAPPED",
             _ => "UNMAPPED",
         };
         write!(f, "{}", s)

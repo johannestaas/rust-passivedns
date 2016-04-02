@@ -3,7 +3,7 @@ use std::fmt;
 
 /// Enum of the different types (A, CNAME, ...)
 #[derive(Debug)]
-pub enum DnsType {
+pub enum Type {
     ZERO, A, NS, MD, MF, CNAME, SOA, MB, MG, MR, NULL, WKS, PTR, HINFO, MINFO, MX, 
     TXT, RP, AFSDB, X25, ISDN, RT, NSAP, NSAP_PTR, SIG, KEY, PX, GPOS, AAAA,
     LOC, NXT, EID, NIMLOC, SRV, ATMA, NAPTR, KX, CERT, A6, DNAME, SINK, OPT,
@@ -13,52 +13,52 @@ pub enum DnsType {
     DNSSEC_LV, OTHER, UNMAPPED
 }
 
-impl DnsType {
-    /// Creates a DnsType from u16, DnsType::UNMAPPED if not implemented yet
-    pub fn new(i: u16) -> DnsType {
+impl Type {
+    /// Creates a Type from u16, Type::UNMAPPED if not implemented yet
+    pub fn new(i: u16) -> Type {
         match i {
-            1 => DnsType::A,
-            2 => DnsType::NS,
-            5 => DnsType::CNAME,
-            6 => DnsType::SOA,
-            12 => DnsType::PTR,
-            15 => DnsType::MX,
-            16 => DnsType::TXT,
-            28 => DnsType::AAAA,
-            29 => DnsType::LOC,
-            251 => DnsType::IXFR,
-            252 => DnsType::AXFR,
-            _ => DnsType::UNMAPPED,
+            1 => Type::A,
+            2 => Type::NS,
+            5 => Type::CNAME,
+            6 => Type::SOA,
+            12 => Type::PTR,
+            15 => Type::MX,
+            16 => Type::TXT,
+            28 => Type::AAAA,
+            29 => Type::LOC,
+            251 => Type::IXFR,
+            252 => Type::AXFR,
+            _ => Type::UNMAPPED,
         }
     }
 }
 
-impl fmt::Display for DnsType {
-    /// Allows debug display of a DnsType, DnsType::A => "A", etc.
+impl fmt::Display for Type {
+    /// Allows debug display of a Type, Type::A => "A", etc.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = match *self {
-            DnsType::A => "A",
-            DnsType::NS => "NS",
-            DnsType::CNAME => "CNAME",
-            DnsType::SOA => "SOA",
-            DnsType::PTR => "PTR",
-            DnsType::MX => "MX",
-            DnsType::TXT => "TXT",
-            DnsType::SIG => "SIG",
-            DnsType::KEY => "KEY",
-            DnsType::AAAA => "AAAA",
-            DnsType::LOC => "LOC",
-            DnsType::SRV => "SRV",
-            DnsType::CERT => "CERT",
-            DnsType::DNAME => "DNAME",
-            DnsType::DNSKEY => "DNSKEY",
-            DnsType::TKEY => "TKEY",
-            DnsType::TSIG => "TSIG",
-            DnsType::IXFR => "IXFR",
-            DnsType::AXFR => "AXFR",
-            DnsType::DNSSEC_TA => "DNSSEC_TA",
-            DnsType::DNSSEC_LV => "DNSSEC_LV",
-            DnsType::UNMAPPED => "UNMAPPED",
+            Type::A => "A",
+            Type::NS => "NS",
+            Type::CNAME => "CNAME",
+            Type::SOA => "SOA",
+            Type::PTR => "PTR",
+            Type::MX => "MX",
+            Type::TXT => "TXT",
+            Type::SIG => "SIG",
+            Type::KEY => "KEY",
+            Type::AAAA => "AAAA",
+            Type::LOC => "LOC",
+            Type::SRV => "SRV",
+            Type::CERT => "CERT",
+            Type::DNAME => "DNAME",
+            Type::DNSKEY => "DNSKEY",
+            Type::TKEY => "TKEY",
+            Type::TSIG => "TSIG",
+            Type::IXFR => "IXFR",
+            Type::AXFR => "AXFR",
+            Type::DNSSEC_TA => "DNSSEC_TA",
+            Type::DNSSEC_LV => "DNSSEC_LV",
+            Type::UNMAPPED => "UNMAPPED",
             _ => "UNMAPPED",
         };
         write!(f, "{}", s)
