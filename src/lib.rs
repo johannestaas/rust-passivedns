@@ -2,6 +2,20 @@
 //! http://www.networksorcery.com/enp/protocol/dns.htm
 //!
 
+pub enum DnsType {
+    A, NS, MD, MF, CNAME, SOA, MB, MG, MR, NULL, WKS, PTR, HINFO, MINFO, MX, 
+    TXT, RP, AFSDB, X25, ISDN, RT, NSAP, NSAP_PTR, SIG, KEY, PX, GPOS, AAAA,
+    LOC, NXT, EID, NIMLOC, SRV, ATMA, NAPTR, KX, CERT, A6, DNAME, SINK, OPT,
+    APL, DS, SSHFP, IPSECKEY, RRSIG, NSEC, DNSKEY, DHCID, NSEC3, NSEC3PARAM,
+    TLSA, HIP, NINFO, RKEY, TALINK, CHILD_DS, SPF, UINFO, UID, GID, UNSPEC,
+    TKEY, TSIG, IXFR, AXFR, MAILB, MAILA, ALL, URI, CAA, DNSSEC_TA,
+    DNSSEC_LV, OTHER
+}
+
+pub enum DnsClass {
+    RESERVED, IN, CH, HS, NONE, ANY, PRIVATE, OTHER
+}
+
 #[derive(Debug)]
 pub struct Query {
     query_name: String,
@@ -43,6 +57,8 @@ pub struct DnsResponse {
     header: DnsHeader,
     questions: Vec<Query>,
     answer_rrs: Vec<ResourceRecord>,
+    authority_rrs: Vec<ResourceRecord>,
+    additional_rrs: Vec<ResourceRecord>,
 }
 
 macro_rules! gt0 {
@@ -114,21 +130,5 @@ impl DnsResponse {
         let src_port_bytes = &data[0x22..0x24];
         let src_port: u16 = (u16::from(src_port_bytes[0]) << 8) + u16::from(src_port_bytes[1]);
         src_port == 53
-    }
-
-    fn dns_query(&self, data: &[u8]) -> String {
-        let mut fqdn: String = String::new();
-        let mut i: usize = 0x37;
-        while data[i] != 0x0 {
-            i += 1;
-        }
-        let query_bytes = &data[0x37..i];
-        let query = std::str::from_utf8(query_bytes).unwrap();
-        let split_3 = query.split("\x03");
-        for slc in split_3 {
-            fqdn.push_str(slc);
-            fqdn.push('.');
-        };
-        fqdn
     }
 }
