@@ -91,10 +91,18 @@ impl DnsResponse {
     }
 
     pub fn new(data: &[u8]) -> Option<DnsResponse> {
-        if !DnsResponse::is_dns_response(data) {
+        if data.len() < 0x36 {
+            return None;
+        }
+        // if not port 53
+        if !DnsResponse::is_port_53(data) {
             return None;
         }
         let hdr = DnsResponse::parse_header(&data[0x2a..0x36]);
+        // if question_response is not a response
+        if !hdr.qr {
+            return None;
+        }
         Some(DnsResponse {
             header: hdr,
             questions: Vec::new(),
@@ -102,16 +110,10 @@ impl DnsResponse {
         })
     }
 
-    fn is_dns_response(data: &[u8]) -> bool {
-        if data.len() < 0x24 {
-            return false;
-        }
+    fn is_port_53(data: &[u8]) -> bool {
         let src_port_bytes = &data[0x22..0x24];
         let src_port: u16 = (u16::from(src_port_bytes[0]) << 8) + u16::from(src_port_bytes[1]);
-        if src_port != 53 {
-            return false;
-        }
-        data[0x2c] == 0x81 && data[0x2d] == 0x80
+        src_port == 53
     }
 
     fn dns_query(&self, data: &[u8]) -> String {
