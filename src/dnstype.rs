@@ -13,7 +13,7 @@ pub enum DnsType {
 }
 
 impl DnsType {
-    /// Creates a DnsType from an integer, DnsType::UNMAPPED if not implemented yet
+    /// Creates a DnsType from u16, DnsType::UNMAPPED if not implemented yet
     pub fn new(i: u16) -> DnsType {
         match i {
             1 => DnsType::A,
