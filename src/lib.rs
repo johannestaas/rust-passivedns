@@ -4,6 +4,28 @@
 #![allow(non_camel_case_types)]
 
 use std::fmt;
+mod macros;
+
+pub fn parse_name_into(data: &[u8], s: &mut String) -> u32 {
+    let mut i: u32 = 0;
+    if data.len() == 0 {
+        return 0;
+    }
+    loop {
+        let lbl_len = data[i as usize] as u32;
+        if lbl_len == 0x0 {
+            break;
+        }
+        println!("label length: {}", lbl_len);
+        for _ in 0..lbl_len {
+            i += 1;
+            s.push_str(std::str::from_utf8(&[data[i as usize]]).unwrap());
+        }
+        s.push('.');
+        i += 1;
+    }
+    return i;
+}
 
 pub enum DnsType {
     ZERO, A, NS, MD, MF, CNAME, SOA, MB, MG, MR, NULL, WKS, PTR, HINFO, MINFO, MX, 
@@ -60,11 +82,34 @@ pub struct Query {
 #[derive(Debug)]
 pub struct ResourceRecord {
     name: String,
-    query_type: u16,
-    query_class: u16,
+    typ: u16,
+    class: u16,
     ttl: u32,
     rdata_length: u16,
     rdata: String,
+}
+
+impl ResourceRecord {
+    pub fn new(s: String, data: &[u8], n: u32) -> (ResourceRecord, u32) {
+        let mut i = n;
+        //let typ: u16 = (u16::from(data[0]) << 8) | u16::from(data[1]);
+        //let class: u16 = (u16::from(data[2]) << 8) | u16::from(data[3]);
+        let class: u16 = to_u16!(data, 0);
+        let typ: u16 = to_u16!(data, 2);
+        let ttl: u32 = to_u32!(data, 4);
+        let rlen: u16 = to_u16!(data, 8);
+        i += 10;
+        let mut rdata = String::new();
+        i += parse_name_into(&data[(i as usize)..], &mut rdata);
+        (ResourceRecord {
+            name: s,
+            typ: typ,
+            class: class,
+            ttl: ttl,
+            rdata_length: rlen,
+            rdata: rdata,
+        }, i)
+    }
 }
 
 #[derive(Debug)]
@@ -100,23 +145,19 @@ pub struct DnsResponse {
     payload: DnsPayload,
 }
 
-macro_rules! gt0 {
-    ($rshift: expr) => {
-        if ($rshift) & 0x1 > 0 {true} else {false}
-    }
-}
-
 impl Query {
-    pub fn new(s: String, data: &[u8]) -> Query {
+    pub fn new(s: String, data: &[u8], n: u32) -> (Query, u32) {
         //let typ: u16 = (u16::from(data[0]) << 8) | u16::from(data[1]);
         //let class: u16 = (u16::from(data[2]) << 8) | u16::from(data[3]);
+        let mut i = n;
         let typ: u16 = u16::from(data[2]) + (u16::from(data[3]) << 8);
         let class: u16 = u16::from(data[0]) + (u16::from(data[1]) << 8);
-        Query {
+        i += 4;
+        (Query {
             name: s,
             typ: typ,
             class: class,
-        }
+        }, i)
     }
 
     pub fn typ(&self) -> DnsType {
@@ -170,12 +211,6 @@ impl fmt::Display for Query {
     }
 }
 
-macro_rules! to_u16 {
-    ($data: expr, $start: expr) => {
-        ($data[$start] as u16) | (($data[$start + 1] as u16) << 8)
-    }
-}
-
 impl DnsResponse {
 
     pub fn parse_header(data: &[u8]) -> DnsHeader {
@@ -216,36 +251,26 @@ impl DnsResponse {
         }
     }
 
-    pub fn parse_name_into(data: &[u8], s: &mut String) -> usize {
-        let mut i: usize = 0;
-        loop {
-            let lbl_len = data[i] as usize;
-            if lbl_len == 0x0 {
-                break;
-            }
-            for _ in 0..lbl_len {
-                i += 1;
-                s.push_str(std::str::from_utf8(&[data[i]]).unwrap());
-            }
-            s.push('.');
-            i += 1;
-        }
-        return i;
-    }
-
     pub fn parse_payload(hdr: &DnsHeader, data: &[u8]) -> DnsPayload {
         let mut questions: Vec<Query> = Vec::new();
         let mut answer_rrs: Vec<ResourceRecord> = Vec::new();
         let mut authority_rrs: Vec<ResourceRecord> = Vec::new();
         let mut additional_rrs: Vec<ResourceRecord> = Vec::new();
-        let mut i: usize = 0;
+        let mut i: u32 = 0;
 
         for _ in 0..hdr.total_questions {
-            let mut s = String::new();
-            i = DnsResponse::parse_name_into(&data[i..], &mut s);
-            let q = Query::new(s, &data[i..]);
+            let mut name = String::new();
+            i += parse_name_into(&data[(i as usize)..], &mut name);
+            let (q, i) = Query::new(name, &data[(i as usize)..], i);
             questions.push(q);
         }
+        for _ in 0..hdr.total_answer_rrs {
+            let mut name = String::new();
+            i += parse_name_into(&data[(i as usize)..], &mut name);
+            let (rr, i) = ResourceRecord::new(name, &data[(i as usize)..], i);
+            answer_rrs.push(rr);
+        }
+
         for q in &questions {
             println!("Query: {}", q);
         }
