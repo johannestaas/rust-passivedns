@@ -17,6 +17,7 @@ fn listen(cap: &mut pcap::Capture<pcap::Active>) {
             _ => continue,
         };
         println!("Got dns response!");
+        println!("{:?}", response);
     }
 }
 
