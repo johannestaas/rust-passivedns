@@ -19,7 +19,7 @@ fn listen(cap: &mut pcap::Capture<pcap::Active>) {
         };
         //println!("{:?}", response);
         for rr in response.payload.answer_rrs {
-            println!("{}", rr.row());
+            println!("{},{}", response.payload.questions[0], rr.row());
         }
     }
 }
