@@ -2,7 +2,6 @@ extern crate pcap;
 extern crate passivedns;
 
 use passivedns::dns::Response;
-use passivedns::util::vec2hex;
 
 fn device() -> pcap::Device {
     pcap::Device::lookup().unwrap()

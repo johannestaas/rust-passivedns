@@ -3,8 +3,8 @@
 use header::Header;
 use query::Query;
 use rr::ResourceRecord;
-use dnstype::Type;
-use util::parse_name_into;
+//use dnstype::Type;
+use util::{parse_name_into,vec2hex};
 
 #[derive(Debug)]
 pub struct Payload<'a> {
@@ -55,8 +55,8 @@ impl<'a> Payload<'a> {
     pub fn records(&self) -> Vec<String> {
         let mut v: Vec<String> = Vec::new();
         for rr in &self.answer_rrs {
-            let s = rr.rdata(&self.data);
-            let vs = format!("{},{},{},{},{}", rr.name(&self.data), rr.typ(), rr.class(), rr.rdata(&self.data), rr.ttl);
+            println!("{}", vec2hex(&rr.rdata));
+            let vs = format!("{},{},{},{},{}", rr.name(&self.data), rr.typ(), rr.class(), rr.ttl, rr.rdata(&self.data));
             v.push(vs);
         }
         v

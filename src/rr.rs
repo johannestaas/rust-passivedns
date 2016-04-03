@@ -3,7 +3,7 @@
 
 use dnsclass::Class;
 use dnstype::Type;
-use util::{parse_name_into,decompress_into};
+use util::decompress_into;
 
 #[derive(Debug)]
 pub struct ResourceRecord {
@@ -19,7 +19,7 @@ pub struct ResourceRecord {
 impl ResourceRecord {
     /// Creates a ResourceRecord from a vector of u8 and mutable u32 index.
     pub fn new(data: &[u8], i: &mut u32) -> ResourceRecord {
-        let name: u16 = to_u16!(data, *i as usize) - 0xc000;
+        let name: u16 = to_u16!(data, *i as usize);
         *i += 2;
         let _typ: u16 = to_u16!(data, *i as usize);
         *i += 2;
@@ -67,24 +67,22 @@ impl ResourceRecord {
     }
 
     fn mx(&self, data: &[u8]) -> String {
-        let pref = to_u16!(&self.rdata, 0);
+        //let pref = to_u16!(&self.rdata, 0);
         let mut s: String = String::new();
-        println!("mx, decompress at {}", self.rdata_start);
         decompress_into(&data, self.rdata_start, &mut s);
         s
     }
 
     fn cname(&self, data: &[u8]) -> String {
         let mut s: String = String::new();
-        println!("cname, decompress at {}", self.rdata_start);
         decompress_into(&data, self.rdata_start, &mut s);
         s
     }
 
     pub fn name(&self, data: &[u8]) -> String {
         let mut s = String::new();
-        println!("name, decompress at {}", self.name);
-        decompress_into(&data, self.name as u32, &mut s);
+        println!("name: {:0X}", self.name & 0x00ff);
+        decompress_into(&data, (self.name & 0x00ff) as u32, &mut s);
         s
     }
 }
