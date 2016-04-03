@@ -13,6 +13,9 @@ impl Response {
         if data.len() < 0x36 {
             return None;
         }
+        if !Response::is_udp(data) {
+            return None;
+        }
         // if not port 53
         if !Response::is_port_53(data) {
             return None;
@@ -27,6 +30,11 @@ impl Response {
             header: hdr,
             payload: payload,
         })
+    }
+
+    fn is_udp(data: &[u8]) -> bool {
+        let proto_bytes = &data[0x17];
+        *proto_bytes == 0x11
     }
 
     fn is_port_53(data: &[u8]) -> bool {
