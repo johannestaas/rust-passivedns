@@ -4,7 +4,7 @@
 #![allow(non_camel_case_types)]
 
 mod macros;
-mod util;
+pub mod util;
 pub mod dnstype;
 pub mod dnsclass;
 pub mod rr;

@@ -15,10 +15,10 @@ pub struct ResourceRecord {
     pub rdata: Vec<u8>,
 }
 
-impl ResourceRecord {
+impl<'a> ResourceRecord<'a> {
     /// Creates a ResourceRecord from a vector of u8 and mutable u32 index.
     pub fn new(data: &[u8], name: &String, i: &mut u32) -> ResourceRecord {
-        //let unknown: u16 = to_u16!(data, 0);
+        let name: u16 = to_u16!(data, *i as usize);
         *i += 2;
         let _typ: u16 = to_u16!(data, *i as usize);
         *i += 2;
@@ -34,7 +34,7 @@ impl ResourceRecord {
         let typ = Type::new(_typ);
         let class = Class::new(_class);
         ResourceRecord {
-            name: name.clone(),
+            name: name,
             typ: typ,
             class: class,
             ttl: ttl,

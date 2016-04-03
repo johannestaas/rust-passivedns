@@ -6,13 +6,6 @@ macro_rules! gt0 {
     }
 }
 
-/*
-macro_rules! to_u16 {
-    ($data: expr, $start: expr) => {
-        ($data[$start] as u16) | (($data[$start + 1] as u16) << 8)
-    }
-}*/
-
 macro_rules! to_u16 {
     ($data: expr, $start: expr) => {
         ($data[$start + 1] as u16) | (($data[$start] as u16) << 8)

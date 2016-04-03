@@ -31,3 +31,11 @@ pub fn parse_name_into(data: &[u8], s: &mut String) -> u32 {
     }
     return i;
 }
+
+pub fn vec2hex(v: &[u8]) -> String {
+    let mut s = format!("{:02X}", &v[0]);;
+    for i in &v[1..] {
+        s = format!("{} {:02X}", s, i);
+    }
+    s
+}

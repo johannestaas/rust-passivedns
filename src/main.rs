@@ -2,6 +2,7 @@ extern crate pcap;
 extern crate passivedns;
 
 use passivedns::dns::Response;
+use passivedns::util::vec2hex;
 
 fn device() -> pcap::Device {
     pcap::Device::lookup().unwrap()
@@ -19,7 +20,7 @@ fn listen(cap: &mut pcap::Capture<pcap::Active>) {
         };
         //println!("{:?}", response);
         for rr in response.payload.answer_rrs {
-            println!("{:?}", rr.rdata);
+            println!("{}", vec2hex(&rr.rdata));
             println!("{},{}", rr.name, rr.row());
         }
     }

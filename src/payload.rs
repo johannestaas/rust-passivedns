@@ -37,11 +37,11 @@ impl Payload {
             answer_rrs.push(rr);
         }
         for _ in 0..hdr.total_authority_rrs {
-            let rr = ResourceRecord::new(&data[..], &name, &mut i);
+            let rr = ResourceRecord::new(&data, &name, &mut i);
             authority_rrs.push(rr);
         }
         for _ in 0..hdr.total_additional_rrs {
-            let rr = ResourceRecord::new(&data[..], &name, &mut i);
+            let rr = ResourceRecord::new(&data, &name, &mut i);
             additional_rrs.push(rr);
         }
         Payload {
