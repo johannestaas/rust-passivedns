@@ -8,9 +8,9 @@ use dnsclass::Class;
 /// The Query struct holds the name as a String
 #[derive(Debug)]
 pub struct Query {
-    name: String,
-    typ: Type,
-    class: Class,
+    pub name: String,
+    pub typ: Type,
+    pub class: Class,
 }
 
 impl Query {

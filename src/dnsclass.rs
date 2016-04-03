@@ -1,7 +1,7 @@
 //! The DNS Class enum and implementation.
 use std::fmt;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Class {
     RESERVED, IN, CH, HS, NONE, ANY, PRIVATE, OTHER, UNMAPPED
 }
