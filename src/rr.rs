@@ -3,7 +3,7 @@
 
 use dnsclass::Class;
 use dnstype::Type;
-use util::parse_name_into;
+use util::{parse_name_into,decompress_into};
 
 #[derive(Debug)]
 pub struct ResourceRecord {
@@ -13,6 +13,7 @@ pub struct ResourceRecord {
     pub ttl: u32,
     pub rdata_length: u16,
     pub rdata: Vec<u8>,
+    rdata_start: u32,
 }
 
 impl ResourceRecord {
@@ -28,6 +29,7 @@ impl ResourceRecord {
         *i += 4;
         let rlen: u16 = to_u16!(data, *i as usize);
         *i += 2;
+        let rdata_start = *i;
         let mut rdata: Vec<u8> = Vec::new();
         rdata.extend((&data[*i as usize..rlen as usize + *i as usize]).iter().cloned());
         *i += rlen as u32;
@@ -40,17 +42,18 @@ impl ResourceRecord {
             ttl: ttl,
             rdata_length: rlen,
             rdata: rdata,
+            rdata_start: rdata_start,
         }
     }
 
-    pub fn rdata(&self) -> String {
+    pub fn rdata(&self, data: &[u8]) -> String {
         //println!("{}", self.rdata_length);
         //println!("{:?}", self.rdata);
         match self.typ {
             Type::A => format!("{}.{}.{}.{}", self.rdata[0], self.rdata[1], self.rdata[2], self.rdata[3]),
-            Type::MX => self.parse_mx(),
+            Type::MX => self.mx(data),
             Type::AAAA => format!("{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}", self.rdata[0], self.rdata[1], self.rdata[2], self.rdata[3], self.rdata[4], self.rdata[5], self.rdata[6], self.rdata[7], self.rdata[8], self.rdata[9], self.rdata[10], self.rdata[11], self.rdata[12], self.rdata[13], self.rdata[14], self.rdata[15]),
-            Type::CNAME => self.parse_cname(),
+            Type::CNAME => self.cname(data),
             _ => format!("{:?}", self.rdata),
         }
     }
@@ -63,20 +66,22 @@ impl ResourceRecord {
         format!("{}", self.typ)
     }
 
-    pub fn row(&self) -> String {
-        format!("{},{},{}", self.class(), self.typ(), self.rdata())
-    }
-
-    fn parse_mx(&self) -> String {
+    fn mx(&self, data: &[u8]) -> String {
         let pref = to_u16!(&self.rdata, 0);
         let mut s: String = String::new();
-        parse_name_into(&self.rdata[2..self.rdata.len()], &mut s);
-        format!("{},{}", pref, s)
+        decompress_into(&data, self.rdata_start, &mut s);
+        s
     }
 
-    fn parse_cname(&self) -> String {
+    fn cname(&self, data: &[u8]) -> String {
         let mut s: String = String::new();
-        parse_name_into(&self.rdata[..self.rdata.len()], &mut s);
+        decompress_into(&data, self.rdata_start, &mut s);
+        s
+    }
+
+    pub fn name(&self, data: &[u8]) -> String {
+        let mut s = String::new();
+        decompress_into(&data, self.name as u32, &mut s);
         s
     }
 }

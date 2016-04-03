@@ -39,3 +39,22 @@ pub fn vec2hex(v: &[u8]) -> String {
     }
     s
 }
+
+pub fn decompress_into(data: &[u8], i: u32, s: &mut String) {
+    let mut ic: u32 = 0;
+    loop {
+        let index = (i + ic) as usize;
+        let c = data[index];
+        ic += 1;
+        if (c as u8) & 0xc0 == 0xc0 {
+            let next = to_u16!(data, (i + ic) as usize);
+            let mut s2 = String::new();
+            decompress_into(data, next as u32, &mut s2);
+            *s = format!("{}.{}", s, s2);
+        } else if c == 0x0 {
+            break;
+        } else {
+            s.push(c as char);
+        }
+    }
+}

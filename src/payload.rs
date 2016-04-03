@@ -7,15 +7,17 @@ use dnstype::Type;
 use util::parse_name_into;
 
 #[derive(Debug)]
-pub struct Payload {
+pub struct Payload<'a> {
     pub questions: Vec<Query>,
     pub answer_rrs: Vec<ResourceRecord>,
     pub authority_rrs: Vec<ResourceRecord>,
     pub additional_rrs: Vec<ResourceRecord>,
+    data: &'a[u8],
+    end: u32,
 }
 
-impl Payload {
-    pub fn new(hdr: &Header, data: &[u8]) -> Payload {
+impl<'a> Payload<'a> {
+    pub fn new(hdr: &Header, data: &'a[u8]) -> Payload<'a> {
         let mut questions: Vec<Query> = Vec::new();
         let mut answer_rrs: Vec<ResourceRecord> = Vec::new();
         let mut authority_rrs: Vec<ResourceRecord> = Vec::new();
@@ -45,6 +47,18 @@ impl Payload {
             answer_rrs: answer_rrs,
             authority_rrs: authority_rrs,
             additional_rrs: additional_rrs,
+            data: data,
+            end: i,
         }
+    }
+
+    pub fn records(&self) -> Vec<String> {
+        let mut v: Vec<String> = Vec::new();
+        for rr in &self.answer_rrs {
+            let s = rr.rdata(&self.data);
+            let vs = format!("{},{},{},{},{}", rr.name(&self.data), rr.typ(), rr.class(), rr.rdata(&self.data), rr.ttl);
+            v.push(vs);
+        }
+        v
     }
 }

@@ -3,13 +3,13 @@ use header::Header;
 use payload::Payload;
 
 #[derive(Debug)]
-pub struct Response {
+pub struct Response<'a> {
     pub header: Header,
-    pub payload: Payload,
+    pub payload: Payload<'a>,
 }
 
-impl Response {
-    pub fn new(data: &[u8]) -> Option<Response> {
+impl<'a> Response<'a> {
+    pub fn new(data: &'a[u8]) -> Option<Response<'a>> {
         if data.len() < 0x36 {
             return None;
         }
@@ -41,5 +41,9 @@ impl Response {
         let src_port_bytes = &data[0x22..0x24];
         let src_port: u16 = (u16::from(src_port_bytes[0]) << 8) + u16::from(src_port_bytes[1]);
         src_port == 53
+    }
+
+    pub fn records(&self) -> Vec<String> {
+        self.payload.records()
     }
 }

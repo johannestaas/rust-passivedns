@@ -19,9 +19,8 @@ fn listen(cap: &mut pcap::Capture<pcap::Active>) {
             _ => continue,
         };
         //println!("{:?}", response);
-        for rr in response.payload.answer_rrs {
-            println!("{}", vec2hex(&rr.rdata));
-            println!("{},{}", rr.name, rr.row());
+        for rec in response.records() {
+            println!("{}", rec);
         }
     }
 }
