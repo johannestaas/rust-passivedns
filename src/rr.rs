@@ -38,10 +38,24 @@ impl ResourceRecord {
         }
     }
 
-    pub fn serialize(&self) -> String {
+    pub fn rdata(&self) -> String {
         match self.typ {
-            Type::A => "A".to_string(),
-            _ => "UNMAPPED".to_string(),
+            Type::A => format!("{}.{}.{}.{}", self.rdata[0], self.rdata[1], self.rdata[2], self.rdata[3]),
+            Type::MX => format!("{}", to_u16!(self.rdata, 0)),
+            Type::AAAA => format!("{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}:{:02X}{:02X}", self.rdata[0], self.rdata[1], self.rdata[2], self.rdata[3], self.rdata[4], self.rdata[5], self.rdata[6], self.rdata[7], self.rdata[8], self.rdata[9], self.rdata[10], self.rdata[11], self.rdata[12], self.rdata[13], self.rdata[14], self.rdata[15]),
+            _ => format!("{:?}", self.rdata),
         }
+    }
+
+    pub fn class(&self) -> String {
+        format!("{}", self.class)
+    }
+
+    pub fn typ(&self) -> String {
+        format!("{}", self.typ)
+    }
+
+    pub fn row(&self) -> String {
+        format!("{},{},{}", self.class(), self.typ(), self.rdata())
     }
 }
