@@ -18,10 +18,16 @@ pub fn parse_name_into(data: &[u8], s: &mut String) -> u32 {
         }
         for _ in 0..lbl_len {
             i += 1;
+            if i as usize >= data.len() {
+                break;
+            }
             s.push_str(from_utf8(&[data[i as usize]]).unwrap());
         }
         s.push('.');
         i += 1;
+        if i as usize >= data.len() {
+            break;
+        }
     }
     return i;
 }

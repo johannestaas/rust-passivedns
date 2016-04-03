@@ -29,7 +29,7 @@ impl Query {
 
 impl fmt::Display for Query {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "[{}] {}", self.typ, self.name)
+        write!(f, "{},{}", self.typ, self.name)
     }
 }
 

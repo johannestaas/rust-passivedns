@@ -21,8 +21,8 @@ macro_rules! to_u16 {
 
 macro_rules! to_u32 {
     ($data: expr, $start: expr) => {
-        ($data[$start] as u32) | (($data[$start + 1] as u32) << 8) |
-        (($data[$start + 2] as u32) << 16) |
-        (($data[$start + 3] as u32) << 24)
+        ($data[$start + 3] as u32) | (($data[$start + 2] as u32) << 8) |
+        (($data[$start + 1] as u32) << 16) |
+        (($data[$start] as u32) << 24)
     }
 }
