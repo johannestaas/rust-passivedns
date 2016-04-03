@@ -7,7 +7,7 @@ use util::parse_name_into;
 
 #[derive(Debug)]
 pub struct ResourceRecord {
-    pub name: String,
+    pub name: u16,
     pub typ: Type,
     pub class: Class,
     pub ttl: u32,
@@ -15,9 +15,9 @@ pub struct ResourceRecord {
     pub rdata: Vec<u8>,
 }
 
-impl<'a> ResourceRecord<'a> {
+impl ResourceRecord {
     /// Creates a ResourceRecord from a vector of u8 and mutable u32 index.
-    pub fn new(data: &[u8], name: &String, i: &mut u32) -> ResourceRecord {
+    pub fn new(data: &[u8], i: &mut u32) -> ResourceRecord {
         let name: u16 = to_u16!(data, *i as usize);
         *i += 2;
         let _typ: u16 = to_u16!(data, *i as usize);
