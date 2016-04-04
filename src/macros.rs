@@ -19,3 +19,15 @@ macro_rules! to_u32 {
         (($data[$start] as u32) << 24)
     }
 }
+
+macro_rules! to_ptr {
+    ($data: expr, $start: expr) => {
+        $data[($start as usize) + 1] as u32
+    }
+}
+
+macro_rules! u16_to_ptr {
+    ($data: expr) => {
+        ($data & 0x00ff) as u32
+    }
+}

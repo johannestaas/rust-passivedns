@@ -27,10 +27,11 @@ impl<'a> Payload<'a> {
 
         for _ in 0..hdr.total_questions {
             i += parse_name_into(&data[(i as usize)..], &mut name);
-            let q = Query::new(name.clone(), &data[(i as usize)..], &mut i);
+            let q = Query::new(name.clone(), &data[i as usize..], &mut i);
             questions.push(q);
         }
         for _ in 0..hdr.total_answer_rrs {
+            println!("{}", vec2hex(&data[i as usize..]));
             let rr = ResourceRecord::new(&data, &mut i);
             answer_rrs.push(rr);
         }
@@ -55,7 +56,6 @@ impl<'a> Payload<'a> {
     pub fn records(&self) -> Vec<String> {
         let mut v: Vec<String> = Vec::new();
         for rr in &self.answer_rrs {
-            println!("{}", vec2hex(&rr.rdata));
             let vs = format!("{},{},{},{},{}", rr.name(&self.data), rr.typ(), rr.class(), rr.ttl, rr.rdata(&self.data));
             v.push(vs);
         }

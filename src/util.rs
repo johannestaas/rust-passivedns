@@ -44,17 +44,20 @@ pub fn decompress_into(data: &[u8], i: u32, s: &mut String) {
     let mut ic: u32 = 0;
     'outer: loop {
         let l = data[(i + ic) as usize];
+        println!("starting at {}, found: {:02X}", i + ic, l);
+        if l & 0xc0 == 0xc0 {
+            let next = to_ptr!(data, i + ic);
+            let mut s2 = String::new();
+            decompress_into(&data, next, &mut s2);
+            s.push('.');
+            s.push_str(s2.as_str());
+            break 'outer;
+        }
         ic += 1;
         for _ in 0..l {
             let index = (i + ic) as usize;
             let c = data[index];
-            if c & 0xc0 == 0xc0 {
-                let next = to_u16!(data, index) & 0x00ff;
-                let mut s2 = String::new();
-                decompress_into(data, next as u32, &mut s2);
-                s.push_str(s2.as_str());
-                break 'outer;
-            } else if c == 0x0 {
+            if c == 0x0 {
                 break 'outer;
             } else {
                 s.push(c as char);
