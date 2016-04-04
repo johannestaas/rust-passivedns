@@ -68,21 +68,27 @@ impl ResourceRecord {
 
     fn mx(&self, data: &[u8]) -> String {
         //let pref = to_u16!(&self.rdata, 0);
+        println!("running mx");
         let mut s: String = String::new();
         decompress_into(&data, self.rdata_start + 2, &mut s);
         s
     }
 
     fn cname(&self, data: &[u8]) -> String {
+        println!("running cname()");
         let mut s: String = String::new();
         decompress_into(&data, self.rdata_start, &mut s);
         s
     }
 
     pub fn name(&self, data: &[u8]) -> String {
+        println!("running name()");
         let mut s = String::new();
-        println!("name: 0x{:0X}", &self.name);
-        decompress_into(&data, u16_to_ptr!(&self.name), &mut s);
+        //println!("name: 0x{:0X}", &self.name);
+        let ptr = u16_to_ptr!(self.name) - 12;
+        println!("ptr: {}", ptr);
+        println!("data[12..]: {:?}", &data[12..]);
+        decompress_into(&data, ptr, &mut s);
         s
     }
 }

@@ -28,6 +28,6 @@ macro_rules! to_ptr {
 
 macro_rules! u16_to_ptr {
     ($data: expr) => {
-        ($data & 0x00ff) as u32
+        ($data & 0xff) as u32
     }
 }
