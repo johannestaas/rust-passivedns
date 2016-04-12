@@ -41,29 +41,26 @@ pub fn vec2hex(v: &[u8]) -> String {
 }
 
 pub fn decompress_into(data: &[u8], i: u32, s: &mut String) {
-    let mut ic: u32 = 0;
+    let mut ic: u32 = i;
+    let mut looped = 0;
     'outer: loop {
-        let l = data[(i + ic) as usize];
+        looped += 1;
+        if looped > 100 {
+            break;
+        }
+        let l = data[ic as usize];
         if l & 0xc0 == 0xc0 {
-            let next = to_ptr!(data, i + ic) - 12;
-            let mut s2 = String::new();
-            decompress_into(&data, next, &mut s2);
-            s.push_str(s2.as_str());
-            break 'outer;
+            ic = to_ptr!(data, ic) - 12;
+            continue;
+        } else if l == 0x0 {
+            break;
         }
         ic += 1;
-        if l > 0 {
-            s.push('.');
-        }
         for _ in 0..l {
-            let index = (i + ic) as usize;
-            let c = data[index];
+            let c = data[ic as usize];
             if c & 0xc0 == 0xc0 {
-                let next = to_ptr!(data, index) - 12;
-                let mut s2 = String::new();
-                decompress_into(&data, next, &mut s2);
-                s.push_str(s2.as_str());
-                break 'outer;
+                ic = to_ptr!(data, ic) - 12;
+                continue 'outer;
             }
             if c == 0x0 {
                 break 'outer;
@@ -72,6 +69,7 @@ pub fn decompress_into(data: &[u8], i: u32, s: &mut String) {
             }
             ic += 1;
         }
+        s.push('.');
     }
 }
 
