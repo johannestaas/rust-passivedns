@@ -46,7 +46,7 @@ pub fn decompress_into(data: &[u8], i: u32, s: &mut String) {
         let l = data[(i + ic) as usize];
         //println!("starting at {}, found: {:02X}", i + ic, l);
         if l & 0xc0 == 0xc0 {
-            let next = to_ptr!(data, i + ic);
+            let next = to_ptr!(data, i + ic) - 12;
             let mut s2 = String::new();
             decompress_into(&data, next, &mut s2);
             s.push('.');
@@ -60,7 +60,7 @@ pub fn decompress_into(data: &[u8], i: u32, s: &mut String) {
             let c = data[index];
             //println!("c: {}", c);
             if c & 0xc0 == 0xc0 {
-                let next = to_ptr!(data, index);
+                let next = to_ptr!(data, index) - 12;
                 let mut s2 = String::new();
                 decompress_into(&data, next, &mut s2);
                 s.push('.');
@@ -76,4 +76,30 @@ pub fn decompress_into(data: &[u8], i: u32, s: &mut String) {
         }
         s.push('.');
     }
+}
+
+pub fn hexdump(data: &[u8]) {
+    let mut s = String::new();
+    let mut ct = 0;
+    let mut conv = String::new();
+    for b in data {
+        if ct > 0 {
+            if ct % 16 == 0 {
+                s.push(' ');
+                s.push_str(conv.as_str());
+                s.push('\n');
+                conv = String::new();
+            } else if ct % 8 == 0 {
+                s.push(' ');
+            }
+        }
+        s.push_str(format!("{:02X} ", b).as_str());
+        if *b >= 0x32u8 && *b <= 0x7eu8 {
+            conv.push(*b as char);
+        } else {
+            conv.push('.');
+        }
+        ct += 1;
+    }
+    println!("{}", s);
 }

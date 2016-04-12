@@ -4,7 +4,7 @@ use header::Header;
 use query::Query;
 use rr::ResourceRecord;
 //use dnstype::Type;
-use util::{parse_name_into,vec2hex};
+use util::{parse_name_into,vec2hex,hexdump};
 
 #[derive(Debug)]
 pub struct Payload<'a> {
@@ -31,7 +31,6 @@ impl<'a> Payload<'a> {
             questions.push(q);
         }
         for _ in 0..hdr.total_answer_rrs {
-            println!("{}", vec2hex(&data[i as usize..]));
             let rr = ResourceRecord::new(&data, &mut i);
             answer_rrs.push(rr);
         }
@@ -55,10 +54,12 @@ impl<'a> Payload<'a> {
 
     pub fn records(&self) -> Vec<String> {
         let mut v: Vec<String> = Vec::new();
+        hexdump(&self.data);
         for rr in &self.answer_rrs {
             let vs = format!("{},{},{},{},{}", rr.name(&self.data), rr.typ(), rr.class(), rr.ttl, rr.rdata(&self.data));
             v.push(vs);
         }
         v
     }
+
 }
