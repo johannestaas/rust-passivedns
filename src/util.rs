@@ -44,26 +44,24 @@ pub fn decompress_into(data: &[u8], i: u32, s: &mut String) {
     let mut ic: u32 = 0;
     'outer: loop {
         let l = data[(i + ic) as usize];
-        //println!("starting at {}, found: {:02X}", i + ic, l);
         if l & 0xc0 == 0xc0 {
             let next = to_ptr!(data, i + ic) - 12;
             let mut s2 = String::new();
             decompress_into(&data, next, &mut s2);
-            s.push('.');
             s.push_str(s2.as_str());
             break 'outer;
         }
         ic += 1;
-        //println!("length: {}", l);
+        if l > 0 {
+            s.push('.');
+        }
         for _ in 0..l {
             let index = (i + ic) as usize;
             let c = data[index];
-            //println!("c: {}", c);
             if c & 0xc0 == 0xc0 {
                 let next = to_ptr!(data, index) - 12;
                 let mut s2 = String::new();
                 decompress_into(&data, next, &mut s2);
-                s.push('.');
                 s.push_str(s2.as_str());
                 break 'outer;
             }
@@ -74,7 +72,6 @@ pub fn decompress_into(data: &[u8], i: u32, s: &mut String) {
             }
             ic += 1;
         }
-        s.push('.');
     }
 }
 

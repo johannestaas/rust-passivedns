@@ -54,7 +54,7 @@ impl<'a> Payload<'a> {
 
     pub fn records(&self) -> Vec<String> {
         let mut v: Vec<String> = Vec::new();
-        hexdump(&self.data);
+        //hexdump(&self.data);
         for rr in &self.answer_rrs {
             let vs = format!("{},{},{},{},{}", rr.name(&self.data), rr.typ(), rr.class(), rr.ttl, rr.rdata(&self.data));
             v.push(vs);
