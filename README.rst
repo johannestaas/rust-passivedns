@@ -42,7 +42,7 @@ From the project root directory::
 Usage
 -----
 
-passivedns must be run as root to sniff packets in promiscuous mode.
+passivedns must be run as root to sniff packets in promiscuous mode::
 
     $ sudo ./target/debug/passivedns
     # ./target/debug/passivedns
