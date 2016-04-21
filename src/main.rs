@@ -19,7 +19,7 @@ fn listen(cap: &mut pcap::Capture<pcap::Active>) {
         };
         //println!("{:?}", response);
         for rec in response.records() {
-            println!("{}", rec);
+            println!("{},{},{}", response.src_ip, response.dst_ip, rec);
         }
     }
 }

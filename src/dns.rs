@@ -6,6 +6,8 @@ use payload::Payload;
 pub struct Response<'a> {
     pub header: Header,
     pub payload: Payload<'a>,
+    pub src_ip: String,
+    pub dst_ip: String,
 }
 
 impl<'a> Response<'a> {
@@ -26,10 +28,20 @@ impl<'a> Response<'a> {
             return None;
         }
         let payload = Payload::new(&hdr, &data[0x36..]);
+        let (src_ip, dst_ip) = Response::extract_ips(data);
         Some(Response {
             header: hdr,
             payload: payload,
+            src_ip: src_ip,
+            dst_ip: dst_ip,
         })
+    }
+
+    fn extract_ips(data: &[u8]) -> (String, String) {
+        let s: usize = 26;
+        let src_ip = format!("{}.{}.{}.{}", data[s], data[s+1], data[s+2], data[s+3]);
+        let dst_ip = format!("{}.{}.{}.{}", data[s+4], data[s+5], data[s+6], data[s+7]);
+        (src_ip, dst_ip)
     }
 
     fn is_udp(data: &[u8]) -> bool {

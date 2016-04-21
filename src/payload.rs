@@ -3,8 +3,7 @@
 use header::Header;
 use query::Query;
 use rr::ResourceRecord;
-//use dnstype::Type;
-use util::{parse_name_into,vec2hex,hexdump};
+use util::parse_name_into;
 
 #[derive(Debug)]
 pub struct Payload<'a> {
