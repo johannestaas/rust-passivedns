@@ -2,9 +2,12 @@ rust-passivedns
 ===============
 
 rust-passivedns is a rust implementation of a passive DNS response monitor.
+
+This tool is useful for aggregating passive dns data for analysis, for sec ops, threat analysts and data science purposes. One might combine this tool with other threat analyst tools to track which machines may have been connecting to malicious or blacklisted hosts.
+
 This parses DNS responses and outputs comma-separated values in the format:
 
-    SOURCE_IP,DEST_IP,NAME,RECORD_TYPE,RECORD_CLASS,TTL,RDATA
+SOURCE_IP,DEST_IP,NAME,RECORD_TYPE,RECORD_CLASS,TTL,RDATA
     
 Example::
 
